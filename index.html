@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Portfolio of Samir Singh - Full Stack Developer">
+    <title>Samir Singh | Portfolio</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.9.59/build/spline-viewer.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;400;600&family=Oswald:wght@300;500;700&family=Playfair+Display:ital,wght@0,400;1,400;1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Manrope', 'sans-serif'],
+                        display: ['Oswald', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        black: '#050505',
+                        gold: '#D4AF37',
+                        darkgray: '#111111'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- GLOBAL SETTINGS --- */
+        body {
+            background-color: #050505;
+            color: #EAEAEA;
+            overflow-x: hidden;
+            cursor: default; 
+        }
+
+        /* --- ARCHITECTURAL GRID OVERLAY --- */
+        .grid-overlay {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 100px 100px;
+            background-position: center top;
+        }
+        @media (max-width: 768px) { .grid-overlay { background-size: 50px 50px; } }
+
+        /* Floating Plus Signs (+) */
+        .plus-marker {
+            position: absolute; color: rgba(255, 255, 255, 0.1);
+            font-family: monospace; font-size: 20px; z-index: 1;
+            animation: float 10s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* --- SCROLL PROGRESS LINE --- */
+        .scroll-line-container {
+            position: fixed; right: 0; top: 0; width: 4px; height: 100vh;
+            z-index: 9999; background: rgba(255, 255, 255, 0.05);
+        }
+        .scroll-line-bar {
+            width: 100%; background: #D4AF37; height: 0%;
+            box-shadow: 0 0 10px #D4AF37; transition: height 0.1s linear;
+        }
+        @media (max-width: 768px) { .scroll-line-container { width: 3px; } }
+
+        /* --- LOADER --- */
+        .loader-panel {
+            position: fixed; width: 100%; height: 50dvh;
+            background: #050505; z-index: 9999;
+            transition: transform 1.5s cubic-bezier(0.76, 0, 0.24, 1);
+            will-change: transform;
+        }
+        #loader-top { top: 0; transform-origin: top; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        #loader-bottom { bottom: 0; transform-origin: bottom; border-top: 1px solid rgba(255,255,255,0.1); }
+        #loader-content {
+            position: fixed; inset: 0; z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            pointer-events: none; transition: opacity 0.5s ease;
+        }
+        .loaded #loader-top { transform: translateY(-100%); }
+        .loaded #loader-bottom { transform: translateY(100%); }
+        .loaded #loader-content { opacity: 0; }
+        .counter { 
+            font-family: 'Oswald', sans-serif; 
+            font-size: clamp(60px, 15vw, 180px); 
+            color: #EAEAEA; font-weight: 700; line-height: 1; letter-spacing: -0.05em;
+        }
+        .progress-bar-bg {
+            width: 200px; height: 2px; background: rgba(255,255,255,0.1);
+            position: relative; overflow: hidden; border-radius: 2px; margin-top: 20px;
+        }
+        #progress-bar {
+            position: absolute; left: 0; top: 0; height: 100%; width: 0%;
+            background-color: #D4AF37; box-shadow: 0 0 15px #D4AF37;
+            transition: width 0.1s linear;
+        }
+
+        /* --- BACKGROUNDS --- */
+        #bg-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; background: #050505; }
+        .bg-img {
+            position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
+            transition: opacity 0.6s ease-in-out, transform 8s ease-out;
+            transform: scale(1.1); filter: grayscale(100%) brightness(0.3);
+        }
+        .bg-img.active { opacity: 0.5; transform: scale(1); filter: grayscale(0%) brightness(0.4); }
+
+        /* --- CURSOR (Desktop Only) --- */
+        @media (hover: hover) and (pointer: fine) {
+            body { cursor: none; }
+            #cursor {
+                position: fixed; top: 0; left: 0; width: 8px; height: 8px;
+                background: white; border-radius: 50%; pointer-events: none;
+                transform: translate(-50%, -50%); z-index: 9999; mix-blend-mode: difference;
+            }
+            #cursor-circle {
+                position: fixed; top: 0; left: 0; width: 40px; height: 40px;
+                border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: none;
+                transform: translate(-50%, -50%); z-index: 9998;
+                transition: top 0.1s, left 0.1s, transform 0.3s ease;
+            }
+            body.hovered #cursor { transform: scale(0); }
+            body.hovered #cursor-circle { transform: translate(-50%, -50%) scale(1.5); background: rgba(255,255,255,0.1); backdrop-filter: blur(2px); border-color: transparent; }
+        }
+
+        /* --- UTILS --- */
+        .reveal-span { display: inline-block; transform: translateY(110%); transition: transform 1.2s cubic-bezier(0.19, 1, 0.22, 1); }
+        .is-visible .reveal-span { transform: translateY(0); }
+        .group-hover\:stroke-text { -webkit-text-stroke: 1px white; color: transparent; }
+        
+        .marquee-container { overflow: hidden; white-space: nowrap; position: relative; }
+        .marquee-content { display: inline-block; animation: marquee 20s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        spline-viewer::shadow #logo { display: none !important; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+
+        /* ========================================= */
+        /* === ROBOT & FOOTER TEXT CSS === */
+        /* ========================================= */
+        .robot-stage {
+            position: relative;
+            width: 100%;
+            height: 500px; /* Increased height for better visibility */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+            overflow: hidden;
+            background: #050505;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 10;
+        }
+
+        /* THE MASSIVE BACKGROUND TEXT "SAMIR" */
+        .footer-big-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -40%); /* Slightly offset to sit behind robot head */
+            font-family: 'Oswald', sans-serif;
+            font-size: 25vw; /* Massive size */
+            font-weight: 700;
+            color: #111; /* Subtle dark grey so it doesn't distract */
+            z-index: 1; /* Behind robot */
+            white-space: nowrap;
+            pointer-events: none;
+            line-height: 0.8;
+            letter-spacing: -0.05em;
+        }
+        
+        .robot-container {
+            position: relative;
+            z-index: 10; /* In front of text */
+            animation: robotFloat 6s ease-in-out infinite;
+        }
+
+        /* HEAD PIVOT */
+        .head-pivot {
+            width: 140px;
+            height: 110px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform-origin: center bottom;
+            transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .head-shape {
+            width: 100%; height: 100%;
+            background: #1a1a1a; /* Dark Grey Body */
+            border-radius: 18px;
+            border: 2px solid #333;
+            position: absolute; top: 0; left: 0;
+            box-shadow: -10px 10px 30px rgba(0,0,0,0.8);
+            backface-visibility: hidden; z-index: 2;
+        }
+
+        /* FACE PLATE */
+        .face-plate {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            transform: translateZ(20px); transform-style: preserve-3d;
+            pointer-events: none;
+        }
+
+        .antenna {
+            position: absolute; top: -40px; left: 50%;
+            transform: translateX(-50%) translateZ(10px);
+            width: 4px; height: 40px; background: #444;
+        }
+        .antenna-ball {
+            width: 12px; height: 12px;
+            background: #ff3b3b;
+            border-radius: 50%;
+            position: absolute; top: -12px; left: -4px;
+            box-shadow: 0 0 10px rgba(255, 59, 59, 0.8);
+        }
+
+        .screen {
+            width: 110px; height: 75px;
+            background: #000;
+            margin: 15px auto;
+            border-radius: 6px;
+            border: 1px solid #333;
+            position: relative; overflow: hidden;
+            box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.1); /* Gold glow inside */
+        }
+
+        .eye {
+            width: 30px; height: 30px;
+            background: #D4AF37; /* THEME GOLD */
+            border-radius: 50%;
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px #D4AF37;
+            transition: all 0.05s linear;
+        }
+
+        /* BODY */
+        .body-group {
+            position: relative; display: flex;
+            flex-direction: column; align-items: center;
+            transform: translateY(-5px);
+        }
+
+        .neck {
+            width: 50px; height: 20px;
+            background: #222;
+            border-radius: 0 0 10px 10px; margin-top: -5px; z-index: 1;
+        }
+
+        .torso {
+            width: 90px; height: 100px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 12px;
+            position: relative; z-index: 1;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .logo-badge {
+            font-size: 8px; font-weight: 900; color: #444; letter-spacing: 1px;
+            font-family: 'Oswald', sans-serif;
+        }
+
+        /* Limbs */
+        .arm {
+            width: 25px; height: 80px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 20px;
+            position: absolute; top: 10px;
+        }
+        .arm.left { left: -35px; transform: rotate(15deg); }
+        .arm.right { right: -35px; transform: rotate(-15deg); }
+
+        .leg {
+            width: 30px; height: 60px;
+            background: #1a1a1a;
+            border: 2px solid #333;
+            border-radius: 0 0 15px 15px;
+            position: absolute; bottom: -55px;
+        }
+        .leg.left { left: 10px; }
+        .leg.right { right: 10px; }
+
+        @keyframes robotFloat {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loader-top" class="loader-panel"></div>
+    <div id="loader-bottom" class="loader-panel"></div>
+    <div id="loader-content">
+        <div class="counter" id="counter">0%</div>
+        <div class="progress-bar-bg">
+            <div id="progress-bar"></div>
+        </div>
+        <div class="font-sans text-[10px] tracking-[0.4em] uppercase text-white/40 mt-4 animate-pulse">
+            System Boot
+        </div>
+    </div>
+
+    <div id="cursor" class="hidden md:block"></div>
+    <div id="cursor-circle" class="hidden md:block"></div>
+
+    <div class="scroll-line-container">
+        <div class="scroll-line-bar" id="scroll-bar"></div>
+    </div>
+
+    <div class="grid-overlay"></div>
+    <div class="plus-marker" style="top: 20%; left: 10%;">+</div>
+    <div class="plus-marker" style="top: 80%; right: 10%; animation-delay: 2s;">+</div>
+    <div class="plus-marker" style="top: 50%; left: 90%; animation-delay: 4s;">+</div>
+
+    <div id="bg-canvas">
+        <img id="bg-echo" src="https://images.unsplash.com/photo-1620712943543-bcc4688e7485?q=80&w=1600&auto=format&fit=crop" class="bg-img" alt="Background">
+        <img id="bg-trade" src="https://images.unsplash.com/photo-1642543492481-44e81e3914a7?q=80&w=1600&auto=format&fit=crop" class="bg-img" alt="Background">
+        <img id="bg-port" src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1600&auto=format&fit=crop" class="bg-img" alt="Background">
+    </div>
+
+    <nav class="fixed inset-0 pointer-events-none z-50 p-6 md:p-10 flex flex-col justify-between mix-blend-difference text-white">
+        <div class="pointer-events-auto flex justify-between items-center w-full">
+            <a href="#" class="font-display font-bold text-xl tracking-tighter leading-none hover-trigger">SAMIR<br>SINGH©</a>
+            <div class="hidden md:flex gap-8 font-sans text-xs uppercase tracking-widest items-center">
+                <a href="#work" class="hover:text-gold transition-colors hover-trigger">Work</a>
+                <a href="#services" class="hover:text-gold transition-colors hover-trigger">Services</a>
+                <a href="#about" class="hover:text-gold transition-colors hover-trigger">Profile</a>
+                <a href="mailto:samirsingh98794@gmail.com" class="hover-trigger border border-white/30 px-5 py-2 rounded-full hover:bg-white hover:text-black transition duration-500">Let's Talk</a>
+            </div>
+            <a href="mailto:samirsingh98794@gmail.com" class="md:hidden font-sans text-[10px] uppercase tracking-widest border border-white/30 px-4 py-2 rounded-full">Let's Talk</a>
+        </div>
+        <div class="pointer-events-auto flex justify-between items-end w-full">
+            <div class="hidden md:block font-sans text-[10px] uppercase tracking-widest text-white/60 leading-relaxed">
+                Surat, IN<br>21.1702° N, 72.8311° E
+            </div>
+            <div class="font-serif italic text-sm md:text-lg animate-bounce opacity-80">
+                Scroll to explore
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 w-full">
+        
+        <section class="min-h-[100dvh] flex items-center justify-center px-4 md:px-6 relative overflow-hidden bg-black">
+            <div class="absolute inset-0 z-0 opacity-60"
+                 style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop'); 
+                       background-size: cover; background-position: center;"></div>
+            <div class="absolute inset-0 z-0 bg-gradient-to-b from-black/60 via-black/30 to-[#050505]"></div>
+
+            <div class="text-center relative z-10 w-full mt-10 md:mt-0">
+                <p class="reveal-wrapper overflow-hidden mb-4 md:mb-6">
+                    <span class="reveal-span font-sans text-[10px] md:text-sm uppercase tracking-[0.4em] md:tracking-[0.5em] text-gold">Full Stack Developer</span>
+                </p>
+                <h1 class="reveal-wrapper overflow-hidden pb-4">
+                    <span class="reveal-span block font-display text-[10vw] md:text-[11vw] leading-tight font-medium tracking-tight mix-blend-overlay text-white/90">DIGITAL</span>
+                </h1>
+                <h1 class="reveal-wrapper overflow-hidden pb-10 -mt-2">
+                    <span class="reveal-span block font-serif italic text-[10vw] md:text-[11vw] leading-tight text-white/80">ARCHITECT</span>
+                </h1>
+                <p class="reveal-wrapper overflow-hidden mt-4 md:mt-8 max-w-xs md:max-w-lg mx-auto">
+                    <span class="reveal-span block font-sans text-white/60 text-xs md:text-sm leading-relaxed">
+                        Combining the logic of Python & Java with the elegance of modern design.
+                    </span>
+                </p>
+            </div>
+        </section>
+
+        <div class="py-4 md:py-6 bg-gold text-black overflow-hidden border-y border-white/10 relative z-20 rotate-1 scale-105">
+            <div class="marquee-container">
+                <div class="marquee-content font-display text-2xl md:text-4xl font-bold uppercase tracking-wide">
+                    &nbsp;PYTHON AUTOMATION • JAVA SPRING BOOT • ALGO TRADING • REACT JS • NEURAL NETWORKS • SYSTEM DESIGN •
+                </div>
+            </div>
+        </div>
+
+        <section id="work" class="py-32 md:py-48 px-6 md:px-20 relative">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex items-end justify-between mb-12 md:mb-24 border-b border-white/10 pb-6 relative">
+                    <h2 class="font-display text-3xl md:text-6xl uppercase z-10 relative">Selected Works</h2>
+                    <span class="font-sans text-[10px] md:text-xs text-white/50 uppercase tracking-widest">(2024 — 25)</span>
+                </div>
+
+                <div class="flex flex-col">
+                    <div class="project-row group border-b border-white/10 py-10 md:py-20 hover-trigger cursor-pointer relative z-20" data-bg="bg-echo" onclick="window.open('https://7212Samir.pythonanywhere.com', '_blank')">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center relative mix-blend-normal md:mix-blend-difference z-10">
+                            <h3 class="font-display text-4xl md:text-8xl text-white md:group-hover:text-transparent md:group-hover:stroke-text transition-all duration-500">ECHO AI</h3>
+                            <div class="mt-2 md:mt-0 md:text-right">
+                                <p class="font-serif italic text-lg md:text-2xl text-white/80">Voice Neural Interface</p>
+                                <p class="font-sans text-[10px] md:text-xs uppercase tracking-widest text-white/50 mt-1">Python / Flask</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-row group border-b border-white/10 py-10 md:py-20 hover-trigger cursor-pointer relative z-20" data-bg="bg-trade" onclick="window.open('https://Samir-Singh900.github.io/protrade-ai/', '_blank')">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center relative mix-blend-normal md:mix-blend-difference z-10">
+                            <h3 class="font-display text-4xl md:text-8xl text-white md:group-hover:text-transparent md:group-hover:stroke-text transition-all duration-500">PRO TRADE</h3>
+                            <div class="mt-2 md:mt-0 md:text-right">
+                                <p class="font-serif italic text-lg md:text-2xl text-white/80">Fintech Algo-Trading</p>
+                                <p class="font-sans text-[10px] md:text-xs uppercase tracking-widest text-white/50 mt-1">JS / NSE API</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="project-row group border-b border-white/10 py-10 md:py-20 hover-trigger cursor-pointer relative z-20" data-bg="bg-port">
+                        <div class="flex flex-col md:flex-row justify-between md:items-center relative mix-blend-normal md:mix-blend-difference z-10">
+                            <h3 class="font-display text-4xl md:text-8xl text-white md:group-hover:text-transparent md:group-hover:stroke-text transition-all duration-500">PORTFOLIO</h3>
+                            <div class="mt-2 md:mt-0 md:text-right">
+                                <p class="font-serif italic text-lg md:text-2xl text-white/80">Personal Identity V3</p>
+                                <p class="font-sans text-[10px] md:text-xs uppercase tracking-widest text-white/50 mt-1">HTML5 / Design</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-20 md:py-32 px-6 md:px-20 border-t border-white/5 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1920&auto=format&fit=crop');">
+            <div class="absolute inset-0 bg-[#050505]/90"></div>
+            <div class="max-w-7xl mx-auto relative z-10">
+                <p class="font-sans text-xs uppercase tracking-[0.4em] text-gold mb-12">The Arsenal</p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 border-t border-l border-white/10">
+                    <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-white/5 transition duration-300">
+                        <i class="fa-brands fa-python text-4xl text-white/60"></i>
+                        <span class="font-display uppercase tracking-widest text-sm">Python</span>
+                    </div>
+                    <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-white/5 transition duration-300">
+                        <i class="fa-brands fa-java text-4xl text-white/60"></i>
+                        <span class="font-display uppercase tracking-widest text-sm">Java</span>
+                    </div>
+                    <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-white/5 transition duration-300">
+                        <i class="fa-solid fa-database text-4xl text-white/60"></i>
+                        <span class="font-display uppercase tracking-widest text-sm">SQL / Data</span>
+                    </div>
+                    <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-white/5 transition duration-300">
+                        <i class="fa-brands fa-react text-4xl text-white/60"></i>
+                        <span class="font-display uppercase tracking-widest text-sm">React JS</span>
+                    </div>
+                    <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-white/5 transition duration-300">
+                        <i class="fa-solid fa-network-wired text-4xl text-white/60"></i>
+                        <span class="font-display uppercase tracking-widest text-sm">REST API</span>
+                    </div>
+                    <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-white/5 transition duration-300">
+                        <i class="fa-brands fa-docker text-4xl text-white/60"></i>
+                        <span class="font-display uppercase tracking-widest text-sm">Docker</span>
+                    </div>
+                    <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-white/5 transition duration-300">
+                        <i class="fa-brands fa-html5 text-4xl text-white/60"></i>
+                        <span class="font-display uppercase tracking-widest text-sm">HTML / CSS</span>
+                    </div>
+                    <div class="aspect-square border-r border-b border-white/10 p-6 flex flex-col justify-between hover:bg-white/5 transition duration-300">
+                        <i class="fa-brands fa-git-alt text-4xl text-white/60"></i>
+                        <span class="font-display uppercase tracking-widest text-sm">Git</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="services" class="py-32 md:py-48 px-6 md:px-20 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1920&auto=format&fit=crop');">
+            <div class="absolute inset-0 bg-[#050505]/90"></div>
+            <div class="max-w-7xl mx-auto relative z-10">
+                <div class="grid md:grid-cols-[1fr_2fr] gap-16 md:gap-32">
+                    <div class="relative md:sticky md:top-32 h-fit">
+                        <span class="font-sans text-xs uppercase tracking-[0.4em] text-gold mb-6 block">Services</span>
+                        <h2 class="font-display text-4xl md:text-6xl uppercase leading-tight">
+                            Engineering <br>
+                            <span class="text-white/40">Digital Reality.</span>
+                        </h2>
+                    </div>
+                    <div class="space-y-12">
+                        <div class="group border-b border-white/10 pb-12 hover:pl-4 transition-all duration-300 cursor-pointer">
+                            <span class="font-sans text-xs text-gold mb-2 block">01</span>
+                            <h3 class="font-display text-3xl md:text-4xl uppercase mb-4">Web Architecture</h3>
+                            <p class="font-sans text-white/50 text-sm leading-relaxed max-w-sm">Full-stack development using modern frameworks. Building scalable, secure, and high-performance web applications.</p>
+                        </div>
+                        <div class="group border-b border-white/10 pb-12 hover:pl-4 transition-all duration-300 cursor-pointer">
+                            <span class="font-sans text-xs text-gold mb-2 block">02</span>
+                            <h3 class="font-display text-3xl md:text-4xl uppercase mb-4">Automation & AI</h3>
+                            <p class="font-sans text-white/50 text-sm leading-relaxed max-w-sm">Python scripting for task automation, data processing, and integration of AI models into business workflows.</p>
+                        </div>
+                        <div class="group border-b border-white/10 pb-12 hover:pl-4 transition-all duration-300 cursor-pointer">
+                            <span class="font-sans text-xs text-gold mb-2 block">03</span>
+                            <h3 class="font-display text-3xl md:text-4xl uppercase mb-4">Algorithmic Trading</h3>
+                            <p class="font-sans text-white/50 text-sm leading-relaxed max-w-sm">Custom strategies for stock market analysis using NSE APIs and real-time data processing.</p>
+                        </div>
+                        <div class="group border-b border-white/10 pb-12 hover:pl-4 transition-all duration-300 cursor-pointer">
+                            <span class="font-sans text-xs text-gold mb-2 block">04</span>
+                            <h3 class="font-display text-3xl md:text-4xl uppercase mb-4">Backend Systems</h3>
+                            <p class="font-sans text-white/50 text-sm leading-relaxed max-w-sm">Robust Java Spring Boot architectures, database management, and secure API development.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 px-6 md:px-20 relative overflow-hidden bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1920&auto=format&fit=crop');">
+             <div class="absolute inset-0 bg-[#050505]/95"></div>
+             <div class="absolute inset-0 opacity-10" style="background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px); background-size: 40px 40px;"></div>
+             
+             <div class="max-w-7xl mx-auto relative z-10">
+                 <div class="text-center mb-24">
+                     <span class="font-sans text-xs uppercase tracking-[0.4em] text-white/40">The Blueprint</span>
+                     <h2 class="font-display text-4xl md:text-5xl uppercase mt-4">Development Protocol</h2>
+                 </div>
+
+                 <div class="grid md:grid-cols-4 gap-8">
+                     <div class="relative p-8 border border-white/10 bg-black/50 backdrop-blur-sm hover:border-gold/50 transition duration-500 group">
+                         <span class="absolute -top-4 -left-4 w-8 h-8 bg-gold text-black flex items-center justify-center font-bold font-sans">1</span>
+                         <h4 class="font-display text-xl uppercase mb-4">Discovery</h4>
+                         <p class="font-sans text-white/50 text-sm">Analyzing requirements, defining scope, and architectural planning.</p>
+                     </div>
+                     <div class="relative p-8 border border-white/10 bg-black/50 backdrop-blur-sm hover:border-gold/50 transition duration-500 group">
+                         <span class="absolute -top-4 -left-4 w-8 h-8 bg-[#222] text-white flex items-center justify-center font-bold font-sans group-hover:bg-gold group-hover:text-black transition">2</span>
+                         <h4 class="font-display text-xl uppercase mb-4">Structure</h4>
+                         <p class="font-sans text-white/50 text-sm">Database schema design, API definition, and backend logic construction.</p>
+                     </div>
+                     <div class="relative p-8 border border-white/10 bg-black/50 backdrop-blur-sm hover:border-gold/50 transition duration-500 group">
+                         <span class="absolute -top-4 -left-4 w-8 h-8 bg-[#222] text-white flex items-center justify-center font-bold font-sans group-hover:bg-gold group-hover:text-black transition">3</span>
+                         <h4 class="font-display text-xl uppercase mb-4">Synthesis</h4>
+                         <p class="font-sans text-white/50 text-sm">Frontend integration, UI implementation, and rigorous system testing.</p>
+                     </div>
+                     <div class="relative p-8 border border-white/10 bg-black/50 backdrop-blur-sm hover:border-gold/50 transition duration-500 group">
+                         <span class="absolute -top-4 -left-4 w-8 h-8 bg-[#222] text-white flex items-center justify-center font-bold font-sans group-hover:bg-gold group-hover:text-black transition">4</span>
+                         <h4 class="font-display text-xl uppercase mb-4">Launch</h4>
+                         <p class="font-sans text-white/50 text-sm">Deployment, optimization, and final handover.</p>
+                     </div>
+                 </div>
+             </div>
+        </section>
+
+        <section id="about" class="py-32 md:py-48 px-6 md:px-20 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1920&auto=format&fit=crop');">
+            <div class="absolute inset-0 bg-[#050505]/95 backdrop-blur-sm"></div>
+
+            <div class="max-w-7xl mx-auto relative z-10">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20">
+                    <div>
+                        <span class="block font-sans text-xs uppercase tracking-[0.4em] text-gold mb-6 md:mb-8">About Me</span>
+                        <h2 class="font-serif text-3xl md:text-5xl leading-tight mb-6 md:mb-8">
+                            "I don't just write code.<br> <span class="text-white/40 italic">I engineer logic.</span>"
+                        </h2>
+                        <p class="font-sans text-white/60 leading-loose mb-8 md:mb-12 text-sm md:text-base">
+                            A graduate of P.P. Savani University with a Diploma in Information Technology. I specialize in Python Automation, Java Architecture, and Web Development.
+                        </p>
+                        <a href="Samir_Singh_Resume.pdf" 
+   download="Samir_Singh_Resume.pdf" 
+   class="inline-block border border-white/20 px-6 py-3 md:px-8 md:py-4 font-display text-sm md:text-base uppercase tracking-widest hover:bg-white hover:text-black transition duration-300 hover-trigger">
+    Download Resume
+</a>
+                    </div>
+                    
+                    <div class="space-y-8 md:space-y-12">
+                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Python / Django</span><span class="font-serif italic text-gold">90%</span></div><div class="w-full h-[1px] bg-white/10"><div class="w-[90%] h-full bg-white"></div></div></div>
+                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Java Architecture</span><span class="font-serif italic text-gold">85%</span></div><div class="w-full h-[1px] bg-white/10"><div class="w-[85%] h-full bg-white"></div></div></div>
+                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Network Security</span><span class="font-serif italic text-gold">80%</span></div><div class="w-full h-[1px] bg-white/10"><div class="w-[80%] h-full bg-white"></div></div></div>
+                    </div>
+                </div>
+
+                <div class="mt-16 md:mt-24 relative w-full h-64 md:h-80 overflow-hidden rounded-sm border border-white/10 group hover-trigger">
+                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1600&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-30 grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-out" alt="University">
+                    <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent z-0"></div>
+                    <div class="absolute inset-0 flex flex-col justify-center px-6 md:px-16 z-10">
+                        <div class="flex items-center gap-4 mb-4"><i class="fa-solid fa-graduation-cap text-2xl md:text-4xl text-gold"></i><span class="font-sans text-[10px] uppercase tracking-[0.3em] text-white/70 border-l border-white/30 pl-4 py-1">Milestone Unlocked</span></div>
+                        <h3 class="font-display text-3xl md:text-6xl uppercase tracking-wide text-white mb-2 leading-none">Diploma Completed</h3>
+                        <p class="font-serif italic text-xl md:text-3xl text-gold/90 mt-2">P.P. Savani University</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="min-h-screen text-white flex flex-col justify-center px-6 md:px-20 relative overflow-hidden bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=1600&auto=format&fit=crop');">
+            <div class="absolute inset-0 bg-[#050505]/80 z-0"></div>
+            <div class="hidden md:block absolute right-[-10%] top-0 h-full w-3/5 z-0 pointer-events-auto mix-blend-screen opacity-90">
+                 <spline-viewer url="https://prod.spline.design/6Wq1Q7scu-9hIyoJ/scene.splinecode"></spline-viewer>
+            </div>
+
+            <div class="max-w-[90rem] mx-auto w-full relative z-10 pointer-events-none">
+                <div class="pointer-events-auto relative">
+                    <p class="font-sans text-xs uppercase tracking-[0.4em] mb-4 text-gold/80">Availability</p>
+                    <div class="font-display text-[14vw] md:text-[12vw] leading-[0.85] uppercase font-bold tracking-tighter relative inline-block">
+                        <span class="block hover:text-gold transition-colors duration-300 hover-trigger">Open For</span>
+                        <span class="block hover:text-gold transition-colors duration-300 hover-trigger pl-0 md:pl-[10vw] italic font-serif font-light relative z-10">Freelance.</span>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 md:mt-24 pt-8 border-t border-white/20 backdrop-blur-sm bg-black/20 p-6 rounded-sm">
+                        <div><h5 class="font-sans text-xs uppercase tracking-widest opacity-50 mb-4">Contact</h5><a href="mailto:samirsingh98794@gmail.com" class="block font-serif text-lg md:text-xl hover:italic transition-all break-all">samirsingh98794@gmail.com</a><a href="tel:+919879442925" class="block font-serif text-lg md:text-xl hover:italic transition-all mt-1">+91 98794 42925</a></div>
+                        <div><h5 class="font-sans text-xs uppercase tracking-widest opacity-50 mb-4">Socials</h5><div class="flex gap-6 text-2xl"><a href="https://github.com/Samir-Singh900" target="_blank" class="hover:scale-110 transition-transform"><i class="fa-brands fa-github"></i></a><a href="https://www.linkedin.com/in/samir-singh-927637328/" target="_blank" class="hover:scale-110 transition-transform"><i class="fa-brands fa-linkedin-in"></i></a><a href="https://wa.me/919879442925" target="_blank" class="hover:scale-110 transition-transform"><i class="fa-brands fa-whatsapp"></i></a></div></div>
+                        <div class="md:text-right"><p class="font-sans text-xs uppercase tracking-widest opacity-50">© 2025 Singh Samir</p></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="robot-stage hover-trigger">
+            <div class="footer-big-text">SAMIR</div>
+            
+            <div class="robot-container">
+                <div class="head-pivot" id="robot-head">
+                    <div class="head-shape"></div>
+                    <div class="face-plate">
+                        <div class="antenna">
+                            <div class="antenna-ball"></div>
+                        </div>
+                        <div class="screen">
+                            <div class="eye" id="robot-eye"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="body-group">
+                    <div class="neck"></div>
+                    <div class="torso">
+                        <span class="logo-badge">SS-25</span>
+                        <div class="arm left"></div>
+                        <div class="arm right"></div>
+                        <div class="leg left"></div>
+                        <div class="leg right"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // 1. SPLIT LOADER
+        const counter = document.getElementById('counter');
+        const progressBar = document.getElementById('progress-bar');
+        const reveals = document.querySelectorAll('.reveal-wrapper');
+        let count = 0;
+        document.body.style.overflow = 'hidden';
+        const interval = setInterval(() => {
+            count += Math.floor(Math.random() * 5) + 1;
+            if (count > 100) count = 100;
+            counter.innerText = count + '%';
+            progressBar.style.width = count + '%';
+            if (count === 100) {
+                clearInterval(interval);
+                setTimeout(() => {
+                    document.body.classList.add('loaded');
+                    document.body.style.overflow = 'auto';
+                    setTimeout(() => reveals.forEach(el => el.classList.add('is-visible')), 800);
+                }, 500);
+            }
+        }, 30);
+
+        // 2. BACKGROUND REVEAL (Desktop)
+        const projectRows = document.querySelectorAll('.project-row');
+        if (window.matchMedia("(min-width: 768px)").matches) {
+            projectRows.forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    const targetId = row.getAttribute('data-bg');
+                    const targetImg = document.getElementById(targetId);
+                    if(targetImg) targetImg.classList.add('active');
+                    projectRows.forEach(r => { if(r !== row) r.style.opacity = '0.3'; });
+                });
+                row.addEventListener('mouseleave', () => {
+                    const targetId = row.getAttribute('data-bg');
+                    const targetImg = document.getElementById(targetId);
+                    if(targetImg) targetImg.classList.remove('active');
+                    projectRows.forEach(r => r.style.opacity = '1');
+                });
+            });
+        }
+
+        // 3. CURSOR (Desktop Only)
+        if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+            const cursor = document.getElementById('cursor');
+            const circle = document.getElementById('cursor-circle');
+            const triggers = document.querySelectorAll('.hover-trigger');
+            
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
+                setTimeout(() => {
+                    circle.style.left = e.clientX + 'px';
+                    circle.style.top = e.clientY + 'px';
+                }, 50);
+            });
+            
+            triggers.forEach(t => {
+                t.addEventListener('mouseenter', () => document.body.classList.add('hovered'));
+                t.addEventListener('mouseleave', () => document.body.classList.remove('hovered'));
+            });
+        }
+
+        // 4. SCROLL PROGRESS LINE (All Devices)
+        window.addEventListener('scroll', () => {
+            const scrollBar = document.getElementById('scroll-bar');
+            if (scrollBar) {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                scrollBar.style.height = scrolled + "%";
+            }
+        });
+
+        // 5. ROBOT TRACKING LOGIC (Integrated)
+        const robotHead = document.getElementById('robot-head');
+        const robotEye = document.getElementById('robot-eye');
+        
+        document.addEventListener('mousemove', (e) => {
+            const x = e.clientX;
+            const y = e.clientY;
+            const centerX = window.innerWidth / 2;
+            const centerY = window.innerHeight / 2;
+
+            // Rotation Logic
+            const rotateY = (x - centerX) / 25; 
+            const rotateX = (centerY - y) / 25;
+            
+            // Clamping
+            const clampedY = Math.max(-45, Math.min(45, rotateY));
+            const clampedX = Math.max(-30, Math.min(30, rotateX));
+
+            if(robotHead) {
+                robotHead.style.transform = `rotateY(${clampedY}deg) rotateX(${clampedX}deg)`;
+            }
+
+            // Eye Parallax
+            const eyeMoveX = (x - centerX) / 60;
+            const eyeMoveY = (y - centerY) / 60;
+            if(robotEye) {
+                robotEye.style.transform = `translate(calc(-50% + ${eyeMoveX}px), calc(-50% + ${eyeMoveY}px))`;
+            }
+        });
+
+        // Robot Blink
+        function blink() {
+            if(robotEye) {
+                robotEye.style.height = '2px';
+                setTimeout(() => { robotEye.style.height = '30px'; }, 150);
+                setTimeout(blink, Math.random() * 3000 + 2000);
+            }
+        }
+        blink();
+    </script>
+</body>
+</html>
