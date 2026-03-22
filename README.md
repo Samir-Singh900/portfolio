@@ -1,6 +1,6 @@
 # Samir Singh | Portfolio '25 🚀
 
-![Portfolio Preview](preview.png)
+![[Portfolio Preview](preview.png)](https://samir-singh900.github.io/portfolio/)
 
 > **"I don't just write code. I engineer logic."**
 
