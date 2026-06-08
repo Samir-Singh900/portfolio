@@ -65,24 +65,24 @@
         .loader-panel { position: fixed; width: 100%; height: 50dvh; background: #050505; z-index: 9999; transition: transform 1.5s cubic-bezier(0.76, 0, 0.24, 1); will-change: transform; }
         #loader-top { top: 0; transform-origin: top; border-bottom: 1px solid rgba(255,255,255,0.1); }
         #loader-bottom { bottom: 0; transform-origin: bottom; border-top: 1px solid rgba(255,255,255,0.1); }
-        #loader-content { position: fixed; inset: 0; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; transition: opacity 0.5s[...]
+        #loader-content { position: fixed; inset: 0; z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; pointer-events: none; transition: opacity 0.5s; opacity: 1; }
         .loaded #loader-top { transform: translateY(-100%); }
         .loaded #loader-bottom { transform: translateY(100%); }
-        .loaded #loader-content { opacity: 0; }
+        .loaded #loader-content { opacity: 0; pointer-events: none; }
         .counter { font-family: 'Oswald', sans-serif; font-size: clamp(60px, 15vw, 180px); color: #EAEAEA; font-weight: 700; line-height: 1; letter-spacing: -0.05em; }
         .progress-bar-bg { width: 200px; height: 2px; background: rgba(255,255,255,0.1); position: relative; overflow: hidden; border-radius: 2px; margin-top: 20px; }
         #progress-bar { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background-color: #D4AF37; box-shadow: 0 0 15px #D4AF37; transition: width 0.1s linear; }
 
         /* BACKGROUNDS */
         #bg-canvas { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; background: #050505; }
-        .bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.6s ease-in-out, transform 8s ease-out; transform: scale(1.1); filter: gr[...]
+        .bg-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.6s ease-in-out, transform 8s ease-out; transform: scale(1.1); filter: grayscale(100%); }
         .bg-img.active { opacity: 0.5; transform: scale(1); filter: grayscale(0%) brightness(0.4); }
 
         /* CURSOR */
         @media (hover: hover) and (pointer: fine) {
             body { cursor: none; }
-            #cursor { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: white; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 9999; mix-blend[...]
-            #cursor-circle { position: fixed; top: 0; left: 0; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: none; transform: translate(-50%, [...]
+            #cursor { position: fixed; top: 0; left: 0; width: 8px; height: 8px; background: white; border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 9999; mix-blend-mode: screen; }
+            #cursor-circle { position: fixed; top: 0; left: 0; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); z-index: 9998; transition: all 0.15s ease-out; }
             body.hovered #cursor { transform: scale(0); }
             body.hovered #cursor-circle { transform: translate(-50%, -50%) scale(1.5); background: rgba(255,255,255,0.1); backdrop-filter: blur(2px); border-color: transparent; }
         }
@@ -100,19 +100,19 @@
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
 
         /* ROBOT */
-        .robot-stage { position: relative; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; perspective: 1000px; overflow: hidden; background: #050505; border-t[...]
-        .footer-big-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%); font-family: 'Oswald', sans-serif; font-size: 25vw; font-weight: 700; color: #111; z-index: 1; whi[...]
+        .robot-stage { position: relative; width: 100%; height: 500px; display: flex; justify-content: center; align-items: center; perspective: 1000px; overflow: hidden; background: #050505; border-top: 1px solid rgba(255,255,255,0.1); }
+        .footer-big-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -40%); font-family: 'Oswald', sans-serif; font-size: 25vw; font-weight: 700; color: #111; z-index: 1; white-space: nowrap; letter-spacing: -0.02em; }
         .robot-container { position: relative; z-index: 10; animation: robotFloat 6s ease-in-out infinite; }
         .head-pivot { width: 140px; height: 110px; position: relative; transform-style: preserve-3d; transform-origin: center bottom; transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-        .head-shape { width: 100%; height: 100%; background: #1a1a1a; border-radius: 18px; border: 2px solid #333; position: absolute; top: 0; left: 0; box-shadow: -10px 10px 30px rgba(0,0,0,0.8); bac[...]
+        .head-shape { width: 100%; height: 100%; background: #1a1a1a; border-radius: 18px; border: 2px solid #333; position: absolute; top: 0; left: 0; box-shadow: -10px 10px 30px rgba(0,0,0,0.8); }
         .face-plate { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: translateZ(20px); transform-style: preserve-3d; pointer-events: none; }
         .antenna { position: absolute; top: -40px; left: 50%; transform: translateX(-50%) translateZ(10px); width: 4px; height: 40px; background: #444; }
         .antenna-ball { width: 12px; height: 12px; background: #ff3b3b; border-radius: 50%; position: absolute; top: -12px; left: -4px; box-shadow: 0 0 10px rgba(255, 59, 59, 0.8); }
-        .screen { width: 110px; height: 75px; background: #000; margin: 15px auto; border-radius: 6px; border: 1px solid #333; position: relative; overflow: hidden; box-shadow: inset 0 0 15px rgba(212[...]
-        .eye { width: 30px; height: 30px; background: #D4AF37; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 20px #D4AF37; transition: [...]
+        .screen { width: 110px; height: 75px; background: #000; margin: 15px auto; border-radius: 6px; border: 1px solid #333; position: relative; overflow: hidden; box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.3); }
+        .eye { width: 30px; height: 30px; background: #D4AF37; border-radius: 50%; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 0 0 20px #D4AF37; transition: height 0.15s ease; }
         .body-group { position: relative; display: flex; flex-direction: column; align-items: center; transform: translateY(-5px); }
         .neck { width: 50px; height: 20px; background: #222; border-radius: 0 0 10px 10px; margin-top: -5px; z-index: 1; }
-        .torso { width: 90px; height: 100px; background: #1a1a1a; border: 2px solid #333; border-radius: 12px; position: relative; z-index: 1; display: flex; justify-content: center; align-items: cent[...]
+        .torso { width: 90px; height: 100px; background: #1a1a1a; border: 2px solid #333; border-radius: 12px; position: relative; z-index: 1; display: flex; justify-content: center; align-items: center; }
         .logo-badge { font-size: 8px; font-weight: 900; color: #444; letter-spacing: 1px; font-family: 'Oswald', sans-serif; }
         .arm { width: 25px; height: 80px; background: #1a1a1a; border: 2px solid #333; border-radius: 20px; position: absolute; top: 10px; }
         .arm.left { left: -35px; transform: rotate(15deg); }
@@ -177,7 +177,7 @@
 
     <main class="relative z-10 w-full">
         <section class="min-h-[100dvh] flex items-center justify-center px-4 md:px-6 relative overflow-hidden bg-black">
-            <div class="absolute inset-0 z-0 opacity-60" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop'); background-size:[...]
+            <div class="absolute inset-0 z-0 opacity-60" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;"></div>
             <div class="absolute inset-0 z-0 bg-gradient-to-b from-black/60 via-black/30 to-[#050505]"></div>
 
             <div class="text-center relative z-10 w-full mt-10 md:mt-0">
@@ -214,7 +214,7 @@
                 </div>
 
                 <div class="flex flex-col">
-                    <div class="project-row group border-b border-white/10 py-10 md:py-20 hover-trigger cursor-pointer relative z-20" data-bg="bg-echo" onclick="window.open('https://7212Samir.pythonan[...]
+                    <div class="project-row group border-b border-white/10 py-10 md:py-20 hover-trigger cursor-pointer relative z-20" data-bg="bg-echo" onclick="window.open('https://7212Samir.pythonanywhere.com')">
                         <div class="flex flex-col md:flex-row justify-between md:items-center relative mix-blend-normal md:mix-blend-difference z-10">
                             <h3 class="font-display text-4xl md:text-8xl text-white md:group-hover:text-transparent md:group-hover:stroke-text transition-all duration-500">ECHO AI</h3>
                             <div class="mt-2 md:mt-0 md:text-right">
@@ -224,7 +224,7 @@
                         </div>
                     </div>
 
-                    <div class="project-row group border-b border-white/10 py-10 md:py-20 hover-trigger cursor-pointer relative z-20" data-bg="bg-trade" onclick="window.open('https://Samir-Singh900.gi[...]
+                    <div class="project-row group border-b border-white/10 py-10 md:py-20 hover-trigger cursor-pointer relative z-20" data-bg="bg-trade" onclick="window.open('https://Samir-Singh900.github.io/ProTrade/')">
                         <div class="flex flex-col md:flex-row justify-between md:items-center relative mix-blend-normal md:mix-blend-difference z-10">
                             <h3 class="font-display text-4xl md:text-8xl text-white md:group-hover:text-transparent md:group-hover:stroke-text transition-all duration-500">PRO TRADE</h3>
                             <div class="mt-2 md:mt-0 md:text-right">
@@ -247,7 +247,7 @@
             </div>
         </section>
 
-        <section class="py-20 md:py-32 px-6 md:px-20 border-t border-white/5 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w[...]
+        <section class="py-20 md:py-32 px-6 md:px-20 border-t border-white/5 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1600&auto=format&fit=crop'); background-size: cover; background-position: center;">
             <div class="absolute inset-0 bg-[#050505]/90"></div>
             <div class="max-w-7xl mx-auto relative z-10">
                 <p class="font-sans text-xs uppercase tracking-[0.4em] text-gold mb-12">The Arsenal</p>
@@ -289,7 +289,7 @@
             </div>
         </section>
 
-        <section id="services" class="py-32 md:py-48 px-6 md:px-20 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1920&a[...]
+        <section id="services" class="py-32 md:py-48 px-6 md:px-20 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;">
             <div class="absolute inset-0 bg-[#050505]/90"></div>
             <div class="max-w-7xl mx-auto relative z-10">
                 <div class="grid md:grid-cols-[1fr_2fr] gap-16 md:gap-32">
@@ -304,12 +304,12 @@
                         <div class="group border-b border-white/10 pb-12 hover:pl-4 transition-all duration-300 cursor-pointer">
                             <span class="font-sans text-xs text-gold mb-2 block">01</span>
                             <h3 class="font-display text-3xl md:text-4xl uppercase mb-4">Web Architecture</h3>
-                            <p class="font-sans text-white/50 text-sm leading-relaxed max-w-sm">Full-stack development using modern frameworks. Building scalable, secure, and high-performance web appl[...]
+                            <p class="font-sans text-white/50 text-sm leading-relaxed max-w-sm">Full-stack development using modern frameworks. Building scalable, secure, and high-performance web applications.</p>
                         </div>
                         <div class="group border-b border-white/10 pb-12 hover:pl-4 transition-all duration-300 cursor-pointer">
                             <span class="font-sans text-xs text-gold mb-2 block">02</span>
                             <h3 class="font-display text-3xl md:text-4xl uppercase mb-4">Automation & AI</h3>
-                            <p class="font-sans text-white/50 text-sm leading-relaxed max-w-sm">Python scripting for task automation, data processing, and integration of AI models into business workfl[...]
+                            <p class="font-sans text-white/50 text-sm leading-relaxed max-w-sm">Python scripting for task automation, data processing, and integration of AI models into business workflows.</p>
                         </div>
                         <div class="group border-b border-white/10 pb-12 hover:pl-4 transition-all duration-300 cursor-pointer">
                             <span class="font-sans text-xs text-gold mb-2 block">03</span>
@@ -326,7 +326,7 @@
             </div>
         </section>
 
-        <section id="about" class="py-32 md:py-48 px-6 md:px-20 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1920&auto[...]
+        <section id="about" class="py-32 md:py-48 px-6 md:px-20 relative bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;">
             <div class="absolute inset-0 bg-[#050505]/95 backdrop-blur-sm"></div>
 
             <div class="max-w-7xl mx-auto relative z-10">
@@ -339,23 +339,23 @@
                         <p class="font-sans text-white/60 leading-loose mb-8 md:mb-12 text-sm md:text-base">
                             A graduate of P.P. Savani University with a Diploma in Information Technology. I specialize in Python Automation, Java Architecture, and Web Development.
                         </p>
-                        <a href="https://raw.githubusercontent.com/Samir-Singh900/portfolio/main/SinghSamir_Resume.pdf" download="SinghSamir_Resume.pdf" class="inline-block border border-white/20 px-6 py-3 md:px-8 md:py-4 font-display text-sm md:text-base uppercas[...]
+                        <a href="https://raw.githubusercontent.com/Samir-Singh900/portfolio/main/SinghSamir_Resume.pdf" download="SinghSamir_Resume.pdf" class="inline-block border border-white/20 px-6 py-3 rounded-sm text-white/80 hover:bg-white/10 transition duration-300 text-sm uppercase tracking-widest">
                             Download Resume
                         </a>
                     </div>
                     
                     <div class="space-y-8 md:space-y-12">
-                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Python / Django</span><span class="font-serif [...]
-                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Java Architecture</span><span class="font-seri[...]
-                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Network Security</span><span class="font-serif[...]
+                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Python / Django</span><span class="font-serif italic text-white/50">95%</span></div><div class="w-full bg-white/10 h-1 rounded-full overflow-hidden"><div class="bg-gold h-full rounded-full" style="width: 95%"></div></div></div>
+                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Java Architecture</span><span class="font-serif italic text-white/50">90%</span></div><div class="w-full bg-white/10 h-1 rounded-full overflow-hidden"><div class="bg-gold h-full rounded-full" style="width: 90%"></div></div></div>
+                        <div class="group"><div class="flex justify-between mb-2"><span class="font-display uppercase tracking-widest text-lg md:text-xl">Network Security</span><span class="font-serif italic text-white/50">85%</span></div><div class="w-full bg-white/10 h-1 rounded-full overflow-hidden"><div class="bg-gold h-full rounded-full" style="width: 85%"></div></div></div>
                     </div>
                 </div>
 
                 <div class="mt-16 md:mt-24 relative w-full h-64 md:h-80 overflow-hidden rounded-sm border border-white/10 group hover-trigger">
-                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1600&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-30 grayscale gro[...]
+                    <img src="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1600&auto=format&fit=crop" class="absolute inset-0 w-full h-full object-cover opacity-30 grayscale group-hover:opacity-20 transition-opacity duration-300">
                     <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent z-0"></div>
                     <div class="absolute inset-0 flex flex-col justify-center px-6 md:px-16 z-10">
-                        <div class="flex items-center gap-4 mb-4"><i class="fa-solid fa-graduation-cap text-2xl md:text-4xl text-gold"></i><span class="font-sans text-[10px] uppercase tracking-[0.3em][...]
+                        <div class="flex items-center gap-4 mb-4"><i class="fa-solid fa-graduation-cap text-2xl md:text-4xl text-gold"></i><span class="font-sans text-[10px] uppercase tracking-[0.3em] text-white/50">Education</span></div>
                         <h3 class="font-display text-3xl md:text-6xl uppercase tracking-wide text-white mb-2 leading-none">Diploma Completed</h3>
                         <p class="font-serif italic text-xl md:text-3xl text-gold/90 mt-2">P.P. Savani University</p>
                     </div>
@@ -363,7 +363,7 @@
             </div>
         </section>
 
-        <section class="min-h-screen text-white flex flex-col justify-center px-6 md:px-20 relative overflow-hidden bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-[...]
+        <section class="min-h-screen text-white flex flex-col justify-center px-6 md:px-20 relative overflow-hidden bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1633356122544-f134324ef6db?q=80&w=1920&auto=format&fit=crop'); background-size: cover; background-position: center;">
             <div class="absolute inset-0 bg-[#050505]/80 z-0"></div>
             <div class="hidden md:block absolute right-[-10%] top-0 h-full w-3/5 z-0 pointer-events-auto mix-blend-screen opacity-90">
                  <spline-viewer url="https://prod.spline.design/6Wq1Q7scu-9hIyoJ/scene.splinecode"></spline-viewer>
@@ -378,8 +378,8 @@
                     </div>
                     
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 md:mt-24 pt-8 border-t border-white/20 backdrop-blur-sm bg-black/20 p-6 rounded-sm">
-                        <div><h5 class="font-sans text-xs uppercase tracking-widest opacity-50 mb-4">Contact</h5><a href="mailto:samirsingh98794@gmail.com" class="block font-serif text-lg md:text-xl h[...]
-                        <div><h5 class="font-sans text-xs uppercase tracking-widest opacity-50 mb-4">Socials</h5><div class="flex gap-6 text-2xl"><a href="https://github.com/Samir-Singh900" target="_b[...]
+                        <div><h5 class="font-sans text-xs uppercase tracking-widest opacity-50 mb-4">Contact</h5><a href="mailto:samirsingh98794@gmail.com" class="block font-serif text-lg md:text-xl hover:text-gold transition-colors">samirsingh98794@gmail.com</a></div>
+                        <div><h5 class="font-sans text-xs uppercase tracking-widest opacity-50 mb-4">Socials</h5><div class="flex gap-6 text-2xl"><a href="https://github.com/Samir-Singh900" target="_blank" class="hover:text-gold transition-colors"><i class="fa-brands fa-github"></i></a><a href="https://linkedin.com/in/samir-singh-900" target="_blank" class="hover:text-gold transition-colors"><i class="fa-brands fa-linkedin"></i></a></div></div>
                         <div class="md:text-right"><p class="font-sans text-xs uppercase tracking-widest opacity-50">© 2025 Singh Samir</p></div>
                     </div>
                 </div>
@@ -416,24 +416,34 @@
     </main>
 
     <script>
-        // LOADER
+        // LOADER - Fixed version
         const counter = document.getElementById('counter');
         const progressBar = document.getElementById('progress-bar');
         const reveals = document.querySelectorAll('.reveal-wrapper');
+        const body = document.body;
+        
         let count = 0;
-        document.body.style.overflow = 'hidden';
+        body.style.overflow = 'hidden';
+        
         const interval = setInterval(() => {
             count += Math.floor(Math.random() * 5) + 1;
             if (count > 100) count = 100;
             counter.innerText = count + '%';
             progressBar.style.width = count + '%';
+            
             if (count === 100) {
                 clearInterval(interval);
+                
+                // Add loaded class to trigger animations
                 setTimeout(() => {
-                    document.body.classList.add('loaded');
-                    document.body.style.overflow = 'auto';
-                    setTimeout(() => reveals.forEach(el => el.classList.add('is-visible')), 800);
-                }, 500);
+                    body.classList.add('loaded');
+                    body.style.overflow = 'auto';
+                }, 100);
+                
+                // Reveal text after animations
+                setTimeout(() => {
+                    reveals.forEach(el => el.classList.add('is-visible'));
+                }, 1200);
             }
         }, 30);
 
@@ -472,8 +482,8 @@
             });
             
             triggers.forEach(t => {
-                t.addEventListener('mouseenter', () => document.body.classList.add('hovered'));
-                t.addEventListener('mouseleave', () => document.body.classList.remove('hovered'));
+                t.addEventListener('mouseenter', () => body.classList.add('hovered'));
+                t.addEventListener('mouseleave', () => body.classList.remove('hovered'));
             });
         }
 
